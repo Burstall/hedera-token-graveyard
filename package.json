@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test",
-	"solhint": "solhint -f table contracts/**/*.sol"
+    "test": "npx hardhat test",
+	"deploy": "npx hardhat run scripts/deploy.js",
+	"interact": "npx hardhat run scripts/interact.js",
+	"logs": "node scripts/getContractLogs.js",
+    "solhint": "npx solhint -f table contracts/**/*.sol"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +23,6 @@
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "^4.7.3",
-    "@openzeppelin/test-helpers": "^0.5.15",
     "chai": "^4.3.6",
     "eslint": "^8.21.0",
     "hardhat": "^2.10.1",
