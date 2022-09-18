@@ -12,6 +12,7 @@ const {
 	TransferTransaction,
 	ContractCallQuery,
 	Hbar,
+	HbarUnit,
 } = require('@hashgraph/sdk');
 // const { hethers } = require('@hashgraph/hethers');
 require('dotenv').config();
@@ -26,68 +27,24 @@ const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 
 const tokenId = TokenId.fromString(process.env.TOKEN_ID);
 const contractId = ContractId.fromString(process.env.CONTRACT_ID);
-const tokenDecimal = Number(process.env.TOKEN_DECIMALS);
 
 const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
-async function contractExecuteFcn(cId, gasLim, fcnName, params, amountHbar) {
-	const contractExecuteTx = await new ContractExecuteTransaction()
-		.setContractId(cId)
-		.setGas(gasLim)
-		.setFunction(fcnName, params)
-		.setPayableAmount(amountHbar)
-		.execute(client);
-
-	// get the results of the function call;
-	const record = await contractExecuteTx.getRecord(client);
-	console.log('record bytes:', JSON.stringify(record.contractFunctionResult.bytes, 4));
-	console.log('Execution return', fcnName, JSON.stringify(contractExecuteTx, 3));
-	const contractResults = decodeFunctionResult(fcnName, record.contractFunctionResult.bytes);
-	const contractExecuteRx = await contractExecuteTx.getReceipt(client);
-	return [contractExecuteRx, contractResults];
-}
-
-/**
- * Decodes the result of a contract's function execution
- * @param functionName the name of the function within the ABI
- * @param resultAsBytes a byte array containing the execution result
- */
-function decodeFunctionResult(functionName, resultAsBytes) {
-	const functionAbi = abi.find(func => func.name === functionName);
-	const functionParameters = functionAbi.outputs;
-	console.log(
-		'\n -Decoding:',
-		functionName,
-		'\n -outputs expected:',
-		JSON.stringify(functionParameters, 3));
-	const resultHex = '0x'.concat(Buffer.from(resultAsBytes).toString('hex'));
-	const result = web3.eth.abi.decodeParameters(functionParameters, resultHex);
-	return result;
-}
+let usagecost;
 
 const main = async () => {
 	// import ABI
 	const json = JSON.parse(fs.readFileSync('./artifacts/contracts/TokenGraveyard.sol/TokenGraveyard.json', 'utf8'));
 	abi = json.abi;
 	console.log('\n -Loading ABI...\n');
-	let [acctTokenBal, accountHbarBal] = await getAccountBalance(operatorId);
-	let [contractTokenBal, contractHbarBal] = await getContractBalance(contractId);
+	let accountHbarBal = await getAccountBalance(operatorId);
+	let contractHbarBal = await getContractBalance(contractId);
 
-	console.log('Using token: ',
-		tokenId.toString(),
-		' / ', tokenId.toSolidityAddress(),
-		'balance:',
-		acctTokenBal,
-		' -> ',
-		accountHbarBal.toString());
 	console.log('Using contract: ',
 		contractId.toString(),
 		' / ', contractId.toSolidityAddress(),
 		'balance:',
-		contractTokenBal,
-		' -> ',
 		contractHbarBal.toString());
-
 
 	// check cost
 	try {
@@ -104,7 +61,8 @@ const main = async () => {
 			.execute(client);
 
 		const results = decodeFunctionResult('getCost', contractCall.bytes);
-		console.log(results);
+		usagecost = results.amt;
+		console.log(JSON.stringify(results, null, 4));
 	}
 	catch (err) {
 		if (err instanceof ReceiptStatusError) {
@@ -115,35 +73,28 @@ const main = async () => {
 		}
 	}
 
-	const tokenIdSolidityAddr = tokenId.toSolidityAddress();
+	// only try the association if a tokenID is specified
+	if (tokenId) {
 
-	console.log('Transferring:', tokenId.toString(), tokenIdSolidityAddr);
-	console.log('To:', operatorId.toString(), operatorId.toSolidityAddress());
+		// associate a token
+		try {
+			console.log('\n -Attempting to associate token');
+			const gasLim = 800000;
+			const params = new ContractFunctionParameters()
+				.addAddress(tokenId.toSolidityAddress());
+			const [associateRx, contractOutput] = await contractExecuteFcn(contractId, gasLim, 'tokenAssociate', params, new Hbar(usagecost, HbarUnit.Tinybar));
+			console.log('Function results', JSON.stringify(contractOutput, 3));
+			// console.log('Receipt', JSON.stringify(callHbarRx, 3));
+			const associateStatus = associateRx.status;
 
-	// Execute token transfer from TokenSender to Operator
-	try {
-		const gasLim = 400000;
-		const params = new ContractFunctionParameters()
-			.addAddress(tokenIdSolidityAddr)
-			.addAddress(operatorId.toSolidityAddress())
-			.addUint256(5 * (10 ** tokenDecimal));
-		const [tokenTransferRx, contractOutput] = await contractExecuteFcn(contractId, gasLim, 'transfer', params);
-		console.log('Function results', JSON.stringify(contractOutput, 3));
-		// console.log('Receipt', JSON.stringify(tokenTransferRx, 3));
-		const tokenTransferStatus = tokenTransferRx.status;
+			console.log('Association: ' + associateStatus.toString());
+			accountHbarBal = await getAccountBalance(operatorId);
+			contractHbarBal = await getContractBalance(contractId);
+			console.log(operatorId.toString() + ' account balance ' + accountHbarBal.toString());
 
-		console.log('Token transfer transaction status: ' + tokenTransferStatus.toString());
-		[acctTokenBal, accountHbarBal] = await getAccountBalance(operatorId);
-		[contractTokenBal, contractHbarBal] = await getContractBalance(contractId);
-		console.log(operatorId.toString() + ' account balance for token ' + tokenId + ' is: ' + acctTokenBal + ' -> ' + accountHbarBal.toString());
-
-		console.log(contractId.toString() + ' account balance for token ' + tokenId + ' is: ' + contractTokenBal + ' -> ' + contractHbarBal.toString());
-	}
-	catch (err) {
-		if (err instanceof ReceiptStatusError) {
-			console.log(err.status, err.name, err.message);
+			console.log(contractId.toString() + ' account balance ' + contractHbarBal.toString());
 		}
-		else {
+		catch (err) {
 			console.log(err);
 		}
 	}
@@ -154,11 +105,11 @@ const main = async () => {
 		const hbarTransferRx = await hbarTransferFcn(operatorId, contractId, 11);
 		const tokenTransferStatus = hbarTransferRx.status;
 		console.log('Hbar send *TO* contract status: ' + tokenTransferStatus.toString());
-		[acctTokenBal, accountHbarBal] = await getAccountBalance(operatorId);
-		[contractTokenBal, contractHbarBal] = await getContractBalance(contractId);
-		console.log(operatorId.toString() + ' account balance for token ' + tokenId + ' is: ' + acctTokenBal + ' -> ' + accountHbarBal.toString());
+		accountHbarBal = await getAccountBalance(operatorId);
+		contractHbarBal = await getContractBalance(contractId);
+		console.log(operatorId.toString() + ' account balance ' + accountHbarBal.toString());
 
-		console.log(contractId.toString() + ' account balance for token ' + tokenId + ' is: ' + contractTokenBal + ' -> ' + contractHbarBal.toString());
+		console.log(contractId.toString() + ' account balance ' + contractHbarBal.toString());
 	}
 	catch (err) {
 		console.log(err);
@@ -171,17 +122,17 @@ const main = async () => {
 		const params = new ContractFunctionParameters()
 			.addAddress(operatorId.toSolidityAddress())
 			.addUint256(11 * 1e8);
-		const [callHbarRx, contractOutput] = await contractExecuteFcn(contractId, gasLim, 'callHbar', params);
+		const [callHbarRx, contractOutput] = await contractExecuteFcn(contractId, gasLim, 'transferHbar', params);
 		console.log('Function results', JSON.stringify(contractOutput, 3));
 		// console.log('Receipt', JSON.stringify(callHbarRx, 3));
 		const callHbarStatus = callHbarRx.status;
 
 		console.log('Move hbar *FROM* contract: ' + callHbarStatus.toString());
-		[acctTokenBal, accountHbarBal] = await getAccountBalance(operatorId);
-		[contractTokenBal, contractHbarBal] = await getContractBalance(contractId);
-		console.log(operatorId.toString() + ' account balance for token ' + tokenId + ' is: ' + acctTokenBal + ' -> ' + accountHbarBal.toString());
+		accountHbarBal = await getAccountBalance(operatorId);
+		contractHbarBal = await getContractBalance(contractId);
+		console.log(operatorId.toString() + ' account balance ' + accountHbarBal.toString());
 
-		console.log(contractId.toString() + ' account balance for token ' + tokenId + ' is: ' + contractTokenBal + ' -> ' + contractHbarBal.toString());
+		console.log(contractId.toString() + ' account balance ' + contractHbarBal.toString());
 	}
 	catch (err) {
 		console.log(err);
@@ -206,22 +157,7 @@ async function getAccountBalance(acctId) {
 
 	const info = await query.execute(client);
 
-	let balance;
-	const tokenMap = info.tokenRelationships;
-	const tokenBal = tokenMap.get(tokenId.toString());
-	try {
-		if (tokenBal) {
-			balance = tokenBal.balance * (10 ** -tokenDecimal);
-		}
-		else {
-			balance = -1;
-		}
-	}
-	catch {
-		balance = -1;
-	}
-
-	return [balance, info.balance];
+	return info.balance;
 }
 
 async function getContractBalance(ctrctId) {
@@ -231,18 +167,7 @@ async function getContractBalance(ctrctId) {
 
 	const info = await query.execute(client);
 
-	let balance;
-
-	const tokenMap = info.tokenRelationships;
-	const tokenBal = tokenMap.get(tokenId.toString());
-	if (tokenBal) {
-		balance = tokenBal.balance * (10 ** -tokenDecimal);
-	}
-	else {
-		balance = -1;
-	}
-
-	return [balance, info.balance];
+	return info.balance;
 }
 
 
@@ -251,6 +176,86 @@ function encodeFunctionCall(functionName, parameters) {
 	const encodedParametersHex = web3.eth.abi.encodeFunctionCall(functionAbi, parameters).slice(2);
 	return Buffer.from(encodedParametersHex, 'hex');
 }
+
+async function contractExecuteFcn(cId, gasLim, fcnName, params, amountHbar) {
+	const contractExecuteTx = await new ContractExecuteTransaction()
+		.setContractId(cId)
+		.setGas(gasLim)
+		.setFunction(fcnName, params)
+		.setPayableAmount(amountHbar)
+		.execute(client);
+
+	// get the results of the function call;
+	const record = await contractExecuteTx.getRecord(client);
+	console.log('record bytes:', JSON.stringify(record.contractFunctionResult.bytes, 4));
+	console.log('Execution return', fcnName, JSON.stringify(contractExecuteTx, 3));
+	record.contractFunctionResult.logs.forEach((log) => {
+		if (log.data == '0x') return;
+
+		// convert the log.data (uint8Array) to a string
+		const logStringHex = '0x'.concat(Buffer.from(log.data).toString('hex'));
+
+		// get topics from log
+		const logTopics = [];
+		log.topics.forEach((topic) => {
+			logTopics.push('0x'.concat(Buffer.from(topic).toString('hex')));
+		});
+
+		// decode the event data
+		const event = decodeEvent('TokenControllerMessage', logStringHex, logTopics.slice(1));
+
+		if (event) {
+			// output the from address stored in the event
+			let outputStr = '';
+			for (let f = 0; f < event.__length__; f++) {
+				const field = event[f];
+				let output = field.startsWith('0x') ? AccountId.fromSolidityAddress(field).toString() : field;
+				output = f == 0 ? output : ' : ' + output;
+				outputStr += output;
+			}
+
+			console.log(outputStr);
+		}
+		else {
+			console.log('ERROR decoding (part of) log message');
+		}
+
+	});
+
+	const contractResults = decodeFunctionResult(fcnName, record.contractFunctionResult.bytes);
+	const contractExecuteRx = await contractExecuteTx.getReceipt(client);
+	return [contractExecuteRx, contractResults];
+}
+
+function decodeEvent(eventName, log, topics) {
+	const eventAbi = abi.find((event) => event.name === eventName && event.type === 'event');
+	try {
+		const decodedLog = web3.eth.abi.decodeLog(eventAbi.inputs, log, topics);
+		return decodedLog;
+	}
+	catch (err) {
+		// console.log('ERROR decoding event', eventName, log, topics, err.message);
+	}
+}
+
+/**
+ * Decodes the result of a contract's function execution
+ * @param functionName the name of the function within the ABI
+ * @param resultAsBytes a byte array containing the execution result
+ */
+function decodeFunctionResult(functionName, resultAsBytes) {
+	const functionAbi = abi.find(func => func.name === functionName);
+	const functionParameters = functionAbi.outputs;
+	console.log(
+		'\n -Decoding:',
+		functionName,
+		'\n -outputs expected:',
+		JSON.stringify(functionParameters, 3));
+	const resultHex = '0x'.concat(Buffer.from(resultAsBytes).toString('hex'));
+	const result = web3.eth.abi.decodeParameters(functionParameters, resultHex);
+	return result;
+}
+
 
 main()
 	.then(() => process.exit(0))
