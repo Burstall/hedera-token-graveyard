@@ -38,8 +38,6 @@ const main = async () => {
 	const json = JSON.parse(fs.readFileSync('./artifacts/contracts/TokenGraveyard.sol/TokenGraveyard.json', 'utf8'));
 	abi = json.abi;
 	console.log('\n -Loading ABI...\n');
-	let accountHbarBal = await getAccountBalance(operatorId);
-	let contractHbarBal = await getContractBalance(contractId);
 
 	console.log('\n-Using ENIVRONMENT:', env);
 	console.log('\n-Using Operator:', operatorId.toString());
@@ -59,11 +57,20 @@ const main = async () => {
 
 	client.setOperator(operatorId, operatorKey);
 
+	let accountHbarBal = await getAccountBalance(operatorId);
+	let contractHbarBal = await getContractBalance(contractId);
+
 	console.log('Using contract: ',
 		contractId.toString(),
 		' / ', contractId.toSolidityAddress(),
 		'balance:',
 		contractHbarBal.toString());
+
+	console.log('Using operator account: ',
+		operatorId.toString(),
+		' / ', operatorId.toSolidityAddress(),
+		'balance:',
+		accountHbarBal.toString());
 
 	// check cost
 	try {
