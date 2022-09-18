@@ -14,8 +14,9 @@ const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
 const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 const usagecost = Number(process.env.INITIAL_COST);
 const contractName = process.env.CONTRACT_NAME ?? null;
+const env = process.env.ENVIRONMENT ?? null;
 
-const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+let client;
 
 async function contractDeployFcn(bytecode, gasLim) {
 	const contractCreateTx = new ContractCreateFlow()
@@ -37,7 +38,24 @@ const main = async () => {
 		return;
 	}
 
-	console.log('\n-Using Operator:', operatorId);
+
+	console.log('\n-Using ENIVRONMENT:', env);
+	console.log('\n-Using Operator:', operatorId.toString());
+
+	if (env.toUpperCase() == 'TEST') {
+		client = Client.forTestnet();
+		console.log('deploying in *TESTNET*');
+	}
+	else if (env.toUpperCase() == 'MAIN') {
+		client = Client.forMainnet();
+		console.log('deploying in *MAINNET*');
+	}
+	else {
+		console.log('ERROR: Must specify either MAIN or TEST as environment in .env file');
+		return;
+	}
+
+	client.setOperator(operatorId, operatorKey);
 
 	const json = JSON.parse(fs.readFileSync(`./artifacts/contracts/${contractName}.sol/${contractName}.json`));
 

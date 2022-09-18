@@ -27,8 +27,9 @@ const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 
 const tokenId = TokenId.fromString(process.env.TOKEN_ID);
 const contractId = ContractId.fromString(process.env.CONTRACT_ID);
+const env = process.env.ENVIRONMENT ?? null;
 
-const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+let client;
 
 let usagecost;
 
@@ -39,6 +40,24 @@ const main = async () => {
 	console.log('\n -Loading ABI...\n');
 	let accountHbarBal = await getAccountBalance(operatorId);
 	let contractHbarBal = await getContractBalance(contractId);
+
+	console.log('\n-Using ENIVRONMENT:', env);
+	console.log('\n-Using Operator:', operatorId.toString());
+
+	if (env.toUpperCase() == 'TEST') {
+		client = Client.forTestnet();
+		console.log('deploying in *TESTNET*');
+	}
+	else if (env.toUpperCase() == 'MAIN') {
+		client = Client.forMainnet();
+		console.log('deploying in *MAINNET*');
+	}
+	else {
+		console.log('ERROR: Must specify either MAIN or TEST as environment in .env file');
+		return;
+	}
+
+	client.setOperator(operatorId, operatorKey);
 
 	console.log('Using contract: ',
 		contractId.toString(),
@@ -102,7 +121,7 @@ const main = async () => {
 	// send hbar to contract
 	try {
 		console.log('\n -Attempting to send hbar to contract (Hedera JS SDK)..');
-		const hbarTransferRx = await hbarTransferFcn(operatorId, contractId, 11);
+		const hbarTransferRx = await hbarTransferFcn(operatorId, contractId, 1);
 		const tokenTransferStatus = hbarTransferRx.status;
 		console.log('Hbar send *TO* contract status: ' + tokenTransferStatus.toString());
 		accountHbarBal = await getAccountBalance(operatorId);
@@ -121,7 +140,7 @@ const main = async () => {
 		const gasLim = 400000;
 		const params = new ContractFunctionParameters()
 			.addAddress(operatorId.toSolidityAddress())
-			.addUint256(11 * 1e8);
+			.addUint256(new Hbar(1).toTinybars());
 		const [callHbarRx, contractOutput] = await contractExecuteFcn(contractId, gasLim, 'transferHbar', params);
 		console.log('Function results', JSON.stringify(contractOutput, 3));
 		// console.log('Receipt', JSON.stringify(callHbarRx, 3));
