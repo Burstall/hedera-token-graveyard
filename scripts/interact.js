@@ -228,7 +228,7 @@ async function contractExecuteFcn(cId, gasLim, fcnName, params, amountHbar) {
 		});
 
 		// decode the event data
-		const event = decodeEvent('TokenControllerMessage', logStringHex, logTopics.slice(1));
+		const event = decodeEvent('GraveyardEvent', logStringHex, logTopics.slice(1));
 
 		if (event) {
 			// output the from address stored in the event
