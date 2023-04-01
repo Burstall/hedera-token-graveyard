@@ -4,6 +4,8 @@ const {
 	PrivateKey,
 	ContractCreateFlow,
 	ContractFunctionParameters,
+	TokenId,
+	ContractId,
 } = require('@hashgraph/sdk');
 const fs = require('fs');
 
@@ -15,6 +17,9 @@ const operatorId = AccountId.fromString(process.env.ACCOUNT_ID);
 const usagecost = Number(process.env.INITIAL_COST);
 const contractName = process.env.CONTRACT_NAME ?? null;
 const env = process.env.ENVIRONMENT ?? null;
+const lazyContractId = ContractId.fromString(process.env.LAZY_CONTRACT);
+const lazyTokenId = TokenId.fromString(process.env.LAZY_TOKEN);
+const lazyBurnPerc = process.env.LAZY_BURN_PERC || 25;
 
 let client;
 
@@ -23,7 +28,12 @@ async function contractDeployFcn(bytecode, gasLim) {
 		.setBytecode(bytecode)
 		.setGas(gasLim)
 		.setConstructorParameters(
-			new ContractFunctionParameters().addUint256(usagecost),
+			new ContractFunctionParameters()
+				.addUint256(usagecost)
+				.addAddress(lazyContractId.toSolidityAddress())
+				.addAddress(lazyTokenId.toSolidityAddress())
+				.addUint256(2)
+				.addUint256(lazyBurnPerc),
 		);
 	const contractCreateSubmit = await contractCreateTx.execute(client);
 	const contractCreateRx = await contractCreateSubmit.getReceipt(client);
@@ -62,7 +72,7 @@ const main = async () => {
 	const contractBytecode = json.bytecode;
 
 	console.log('\n- Deploying contract...', contractName);
-	const gasLimit = 800000;
+	const gasLimit = 1_200_000;
 
 	const [contractId, contractAddress] = await contractDeployFcn(contractBytecode, gasLimit);
 
