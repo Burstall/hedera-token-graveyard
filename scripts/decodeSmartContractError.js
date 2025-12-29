@@ -137,6 +137,24 @@ async function processError(error, silent, indent) {
 async function main() {
 
 	console.log('');
+	console.log('════════════════════════════════════════════════════════════');
+	console.log('  TokenGraveyard v2.0 - Smart Contract Error Decoder');
+	console.log('════════════════════════════════════════════════════════════');
+	console.log('');
+	console.log('Custom errors in TokenGraveyard v2.0:');
+	console.log('  - HTSAssociationFailed(int64 responseCode)');
+	console.log('  - HTSTransferFailed(int64 responseCode)');
+	console.log('  - TooManySerials(uint256 provided, uint256 max)');
+	console.log('  - BadInput(string reason)');
+	console.log('  - LastAdmin()');
+	console.log('  - PermissionDenied(address user, Role required)');
+	console.log('');
+	console.log('Usage:');
+	console.log('  node decodeSmartContractError.js <error_hex>');
+	console.log('  node decodeSmartContractError.js <mirror_url> <contract_id>');
+	console.log('  node decodeSmartContractError.js <mirror_url> <contract_id> <depth>');
+	console.log('');
+
 	// get the command line parameters
 	const args = process.argv.slice(2);
 	if (args.length == 1) {
@@ -164,7 +182,7 @@ async function main() {
 		}
 	}
 	else {
-		console.error('invalid command line arguments supplied, please consult README.md');
+		console.log('No arguments provided. Please provide error hex or mirror details.');
 	}
 }
 

@@ -1,0 +1,827 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_lazyToken",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_lazyGasStation",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_lazyDelegateRegistry",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "lazyCost",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "lazyBurnPercentage",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "AssociationFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "BadArguments",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "BatchAssociationFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "EmptySerialArray",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "FailedToInitialize",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HTSTransferFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HbarTransferFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "provided",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "max",
+                "type": "uint256"
+            }
+        ],
+        "name": "InvalidBurnPercentage",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "serial",
+                "type": "uint256"
+            }
+        ],
+        "name": "InvalidSerialNumber",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "LastAdmin",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "LazyTransferFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "enum TokenStaker.TransferDirection",
+                "name": "_direction",
+                "type": "uint8"
+            }
+        ],
+        "name": "NFTTransferFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_caller",
+                "type": "address"
+            },
+            {
+                "internalType": "enum IRoles.Role",
+                "name": "_role",
+                "type": "uint8"
+            }
+        ],
+        "name": "PermissionDenied",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_provided",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_max",
+                "type": "uint256"
+            }
+        ],
+        "name": "TooManySerials",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "ZeroAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "ZeroAmount",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "lazyCost",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "lazyBurnPercentage",
+                "type": "uint256"
+            }
+        ],
+        "name": "CostUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "GraveyardStatus",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "HbarWithdrawn",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "LazyWithdrawn",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "serials",
+                "type": "uint256[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "viaStaking",
+                "type": "bool"
+            }
+        ],
+        "name": "NFTsBuried",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "target",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "enum IRoles.Role",
+                "name": "role",
+                "type": "uint8"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "added",
+                "type": "bool"
+            }
+        ],
+        "name": "RoleUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "bool",
+                "name": "paidAssociation",
+                "type": "bool"
+            }
+        ],
+        "name": "TokenAssociated",
+        "type": "event"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "name": "addAdmin",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "contractUser",
+                "type": "address"
+            }
+        ],
+        "name": "addContractUser",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "associateToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "associateTokenFree",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "tokenAddresses",
+                "type": "address[]"
+            }
+        ],
+        "name": "batchAssociateTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAdminCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "count",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAdmins",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "admins",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "offset",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "limit",
+                "type": "uint256"
+            }
+        ],
+        "name": "getAdminsPaginated",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "admins",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAssociatedTokenCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "count",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAssociatedTokens",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "tokens",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "offset",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "limit",
+                "type": "uint256"
+            }
+        ],
+        "name": "getAssociatedTokensPaginated",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "tokens",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getContractUserCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "count",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getContractUsers",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "contractUsers",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "offset",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "limit",
+                "type": "uint256"
+            }
+        ],
+        "name": "getContractUsersPaginated",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "contractUsers",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getCost",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "lazyCost",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "lazyBurnPercentage",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "isAdmin",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "isContractUser",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "isTokenAssociated",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "isAssociated",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lazyDelegateRegistry",
+        "outputs": [
+            {
+                "internalType": "contract ILazyDelegateRegistry",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lazyGasStation",
+        "outputs": [
+            {
+                "internalType": "contract ILazyGasStation",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lazyToken",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "name": "removeAdmin",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "contractUser",
+                "type": "address"
+            }
+        ],
+        "name": "removeContractUser",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "serials",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "stakeNFTsToTheGrave",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "serials",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "address",
+                "name": "onBehalfOf",
+                "type": "address"
+            }
+        ],
+        "name": "stakeNFTsToTheGraveOnBehalf",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "lazyCost",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "lazyBurnPercentage",
+                "type": "uint256"
+            }
+        ],
+        "name": "updateCost",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address payable",
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "withdrawHbar",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "withdrawLazy",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive"
+    }
+]
