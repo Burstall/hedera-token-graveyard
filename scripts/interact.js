@@ -12,13 +12,12 @@ const {
 	TransferTransaction,
 } = require('@hashgraph/sdk');
 const fs = require('fs');
-const Web3 = require('web3');
+const { ethers } = require('ethers');
 const readline = require('readline');
 
 require('dotenv').config();
 
-const web3 = new Web3();
-let abi;
+let iface; // ethers Interface for ABI encoding/decoding
 
 // Get operator from .env file
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);
@@ -84,7 +83,7 @@ function displayMenu() {
 const main = async () => {
 	// import ABI
 	const json = JSON.parse(fs.readFileSync('./artifacts/contracts/TokenGraveyard.sol/TokenGraveyard.json', 'utf8'));
-	abi = json.abi;
+	iface = new ethers.Interface(json.abi);
 	console.log('✅ ABI loaded');
 
 	if (!graveyardId) {
@@ -522,17 +521,14 @@ async function setNFTAllowance() {
 // ============================================
 
 function encodeFunctionCall(functionName, parameters) {
-	const functionAbi = abi.find((func) => func.name === functionName && func.type === 'function');
-	const encodedParametersHex = web3.eth.abi.encodeFunctionCall(functionAbi, parameters).slice(2);
-	return Buffer.from(encodedParametersHex, 'hex');
+	const encodedData = iface.encodeFunctionData(functionName, parameters);
+	return Buffer.from(encodedData.slice(2), 'hex');
 }
 
 function decodeFunctionResult(functionName, resultAsBytes) {
-	const functionAbi = abi.find(func => func.name === functionName);
-	const functionParameters = functionAbi.outputs;
 	const resultHex = '0x'.concat(Buffer.from(resultAsBytes).toString('hex'));
-	const result = web3.eth.abi.decodeParameters(functionParameters, resultHex);
-	return result;
+	const decoded = iface.decodeFunctionResult(functionName, resultHex);
+	return decoded;
 }
 
 async function queryContract(functionName, parameters) {
