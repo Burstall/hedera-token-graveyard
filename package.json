@@ -4,20 +4,31 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-	"deploy": "npx hardhat run scripts/deploy.js",
-	"interact": "npx hardhat run scripts/interact.js",
-	"logs": "node scripts/getContractLogs.js",
-    "solhint": "npx solhint -f table contracts/**/*.sol"
+    "test:graveyard": "npx hardhat test test/TokenGraveyard.test.js",
+    "deploy": "npx hardhat run scripts/deploy.js",
+    "interact": "node scripts/interact.js",
+    "logs": "node scripts/getContractLogs.js",
+    "decode-error": "node scripts/decodeSmartContractError.js",
+    "solhint": "npx solhint -f table contracts/**/*.sol",
+    "cli:info": "node scripts/cli/info.js",
+    "cli:admin": "node scripts/cli/admin.js",
+    "cli:bury": "node scripts/cli/bury.js",
+    "cli:associate": "node scripts/cli/associate.js",
+    "cli:allowance": "node scripts/cli/allowance.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hashgraph/sdk": "^2.17.1",
+    "@hashgraph/sdk": "^2.78.0",
     "abi-decoder": "^2.4.0",
     "axios": "^0.27.2",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.1",
+    "ethers": "^6.16.0",
+    "hardhat-contract-sizer": "^2.10.1",
+    "hardhat-docgen": "^1.3.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",

@@ -1,0 +1,72 @@
+[
+    {
+        "inputs": [],
+        "name": "AssociationFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "BadArguments",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "BatchAssociationFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "FailedToInitialize",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "enum TokenStaker.TransferDirection",
+                "name": "_direction",
+                "type": "uint8"
+            }
+        ],
+        "name": "NFTTransferFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "lazyDelegateRegistry",
+        "outputs": [
+            {
+                "internalType": "contract ILazyDelegateRegistry",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lazyGasStation",
+        "outputs": [
+            {
+                "internalType": "contract ILazyGasStation",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lazyToken",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
