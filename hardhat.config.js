@@ -1,6 +1,5 @@
 require('hardhat-contract-sizer');
 require('@nomicfoundation/hardhat-toolbox');
-require('hardhat-docgen');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -23,10 +22,5 @@ module.exports = {
 		runOnCompile: true,
 		disambiguatePaths: false,
 		strict: true,
-	},
-	docgen: {
-		path: './docs',
-		clear: true,
-		runOnCompile: true,
 	},
 };

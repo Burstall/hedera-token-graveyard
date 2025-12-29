@@ -6,7 +6,7 @@ const {
 require('dotenv').config();
 const fs = require('fs');
 const axios = require('axios');
-const Web3 = require('web3');
+const { ethers } = require('ethers');
 
 const baseUrlForMainnet = 'https://mainnet-public.mirrornode.hedera.com';
 const baseUrlForTestnet = 'http://testnet.mirrornode.hedera.com';
@@ -14,8 +14,7 @@ const env = process.env.ENVIRONMENT ?? null;
 const contractName = process.env.CONTRACT_NAME ?? 'TokenGraveyard';
 const eventName = process.env.EVENT_NAME ?? null;
 
-let abi;
-const web3 = new Web3;
+let iface; // ethers Interface for ABI decoding
 
 async function main() {
 	console.log('Using ENVIRONMENT:', env);
@@ -37,7 +36,7 @@ async function main() {
 
 	// import ABI
 	const json = JSON.parse(fs.readFileSync(`./artifacts/contracts/${contractName}.sol/${contractName}.json`, 'utf8'));
-	abi = json.abi;
+	iface = new ethers.Interface(json.abi);
 
 	const contractId = process.env.GRAVEYARD_CONTRACT_ID
 		? ContractId.fromString(process.env.GRAVEYARD_CONTRACT_ID)
@@ -73,7 +72,7 @@ async function getEventsFromMirror(contractId) {
 				if (log.data == '0x') return;
 
 				try {
-					const event = decodeEvent(log.data, log.topics.slice(1));
+					const event = decodeEvent(log.data, log.topics);
 					if (!event) return;
 
 					eventCount++;
@@ -146,12 +145,11 @@ async function getEventsFromMirror(contractId) {
 /**
  * Decodes event contents using the ABI definition of the event
  * @param log log data as a Hex string
- * @param topics an array of event topics
+ * @param topics an array of event topics (including topic0)
  */
 function decodeEvent(log, topics) {
-	const eventAbi = abi.find(event => (event.name === eventName && event.type === 'event'));
-	const decodedLog = web3.eth.abi.decodeLog(eventAbi.inputs, log, topics);
-	return decodedLog;
+	const decoded = iface.decodeEventLog(eventName, log, topics);
+	return decoded;
 }
 
 void main();
