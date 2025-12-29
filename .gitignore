@@ -4,11 +4,11 @@ coverage
 coverage.json
 typechain
 typechain-types
+package-lock.json
 
 #Hardhat files
 cache
 artifacts
-
 
 # Claude Code frameworks (exclude all)
 .claude/
