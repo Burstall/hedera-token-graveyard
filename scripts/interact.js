@@ -17,7 +17,8 @@ const readline = require('readline');
 
 require('dotenv').config();
 
-let iface; // ethers Interface for ABI encoding/decoding
+let iface;
+// ethers Interface for ABI encoding/decoding
 
 // Get operator from .env file
 const operatorKey = PrivateKey.fromString(process.env.PRIVATE_KEY);

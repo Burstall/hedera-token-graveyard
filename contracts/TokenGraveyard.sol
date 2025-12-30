@@ -54,11 +54,6 @@ pragma solidity >=0.8.12 <0.9.0;
 /// @dev For NFTs WITH royalties: use stakeNFTsToTheGrave() to bypass royalty fees
 /// @dev Version 2.1 - Supports royalty bypass, role-based access, LazyGasStation integration
 
-import {HederaResponseCodes} from "./HederaResponseCodes.sol";
-import {HederaTokenServiceLite} from "./HederaTokenServiceLite.sol";
-import {
-    IHederaTokenServiceLite
-} from "./interfaces/IHederaTokenServiceLite.sol";
 import {TokenStaker} from "./TokenStaker.sol";
 
 import {IRoles} from "./interfaces/IRoles.sol";
