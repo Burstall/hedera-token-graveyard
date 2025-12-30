@@ -265,13 +265,13 @@ describe('Deployment: ', function () {
 		graveyardIface = new ethers.Interface(json.abi);
 
 		// Set up global.errorInterfaces for comprehensive error decoding
-		// Combine ABIs from all contracts for better error messages
-		const allAbis = [
-			...json.abi,
-			...lazyGasStationJson.abi,
-			...lazyJson.abi,
+		// Combine only error definitions from all contracts (avoid duplicate constructors/functions)
+		const errorAbis = [
+			...json.abi.filter(item => item.type === 'error'),
+			...lazyGasStationJson.abi.filter(item => item.type === 'error'),
+			...lazyJson.abi.filter(item => item.type === 'error'),
 		];
-		global.errorInterfaces = new ethers.Interface(allAbis);
+		global.errorInterfaces = new ethers.Interface(errorAbis);
 
 		const contractBytecode = json.bytecode;
 		const gasLimit = 6_000_000;
