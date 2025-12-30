@@ -48,9 +48,6 @@
     "cli:associate": "node scripts/cli/associate.js",
     "cli:allowance": "node scripts/cli/allowance.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@hashgraph/sdk": "^2.78.0",
     "abi-decoder": "^2.4.0",
