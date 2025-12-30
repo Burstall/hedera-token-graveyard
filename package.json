@@ -50,7 +50,6 @@
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.78.0",
-    "abi-decoder": "^2.4.0",
     "axios": "^1.7.9",
     "dotenv": "^16.0.1",
     "ethers": "^6.16.0",

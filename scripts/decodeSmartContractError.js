@@ -2,7 +2,7 @@ const {
 	AccountId,
 } = require('@hashgraph/sdk');
 
-const abiDecoder = require('abi-decoder');
+const { ethers } = require('ethers');
 const axios = require('axios');
 
 let contractId = '';
@@ -107,25 +107,29 @@ async function processError(error, silent, indent) {
 			});
 
 			abi.push(abiFragment);
-			// Setup a abiDecoder with the ABI for the error
-			abiDecoder.addABI(abi);
-			const decodedError = abiDecoder.decodeMethod(error.data);
+			// Use ethers.js Interface to decode (replaces abi-decoder)
+			const iface = new ethers.Interface(abi);
 
-			if (decodedError) {
-				console.log(`${'.'.repeat(indent)}Error is ${decodedError.name}`);
-				decodedError.params.forEach(parameter => {
-					console.log(`${'.'.repeat(indent)}Parameter (${parameter.type}) = ${parameter.value}`);
+			try {
+				const decodedData = iface.decodeFunctionData(abiFragment.name, error.data);
 
-					if (parameter.type == 'address') {
-						console.log(`${'.'.repeat(indent)}=> Hedera address ${AccountId.fromSolidityAddress(parameter.value)}`);
+				console.log(`${'.'.repeat(indent)}Error is ${abiFragment.name}`);
+				abiFragment.inputs.forEach((input, index) => {
+					const value = decodedData[index];
+					console.log(`${'.'.repeat(indent)}Parameter (${input.type}) = ${value}`);
+
+					if (input.type == 'address') {
+						console.log(`${'.'.repeat(indent)}=> Hedera address ${AccountId.fromSolidityAddress(value)}`);
 					}
 					console.log('');
 
-					if ((parameter.type == 'bytes') && (parameter.value != null)) {
-						const innerError = errorSignature(parameter.value, true);
+					if ((input.type == 'bytes') && (value != null)) {
+						const innerError = errorSignature(value, true);
 						processError(innerError, true, indent + 2);
 					}
 				});
+			} catch (decodeErr) {
+				console.error('Failed to decode error data:', decodeErr.message);
 			}
 		}
 	}
