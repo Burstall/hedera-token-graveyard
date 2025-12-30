@@ -1,6 +1,6 @@
 {
   "name": "@lazysuperheroes/token-graveyard",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Permanent NFT storage contract for Hedera with royalty bypass capabilities",
   "main": "index.js",
   "repository": {

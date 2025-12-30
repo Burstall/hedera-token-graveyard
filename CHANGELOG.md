@@ -2,6 +2,10 @@
 
 All notable changes to the TokenGraveyard project will be documented in this file.
 
+## [2.1.1] - Dec-2025
+
+chore:/Package audit 
+
 ## [2.0.0] - Dec-2025
 
 ### 🎉 Major Release - Complete Overhaul
