@@ -8,11 +8,12 @@ const {
 	ContractId,
 	TransferTransaction,
 	Hbar,
+	HbarUnit,
 } = require('@hashgraph/sdk');
 const fs = require('fs');
 const readline = require('readline');
 const { ethers } = require('ethers');
-const { getTokenDetails, homebrewPopulateAccountEvmAddress, EntityType } = require('../utils/hederaMirrorHelpers');
+const { getTokenDetails, homebrewPopulateAccountEvmAddress, EntityType, checkMirrorHbarBalance } = require('../utils/hederaMirrorHelpers');
 const { contractExecuteFunction, readOnlyEVMFromMirrorNode } = require('../utils/solidityHelpers');
 
 require('dotenv').config();
@@ -204,13 +205,13 @@ const main = async () => {
 	console.log('\n2️⃣  Checking LazyGasStation HBAR balance...');
 	try {
 		const lgsAccountId = AccountId.fromString(lazyGasStationId.toString());
-		const lgsInfo = await client.getAccountBalance(lgsAccountId);
-		const lgsHbarBalance = lgsInfo.hbars.toBigNumber().toNumber();
-		console.log('   Current balance:', lgsHbarBalance, 'HBAR');
+		const lgsHbarBalTinybar = await checkMirrorHbarBalance(env, lgsAccountId);
+		const lgsHbarBalance = new Hbar(lgsHbarBalTinybar, HbarUnit.Tinybar);
+		console.log('   Current balance:', lgsHbarBalance.toString());
 
 		// Minimum 1 HBAR for refill operations
-		const minHbarBalance = 1;
-		if (lgsHbarBalance < minHbarBalance) {
+		const minHbarBalance = new Hbar(1, HbarUnit.Hbar);
+		if (lgsHbarBalance.toTinybars() < minHbarBalance.toTinybars()) {
 			// Fund with 5 HBAR
 			const fundAmount = 5;
 			console.log('   Balance low, funding with', fundAmount, 'HBAR...');
