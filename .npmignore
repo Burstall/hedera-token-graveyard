@@ -1,0 +1,44 @@
+# Development files (excluded from NPM package)
+test/
+scripts/
+utils/
+docs/
+artifacts/
+cache/
+.env
+.env.example
+hardhat.config.js
+
+# Legacy code
+contracts/legacy/
+abi/LazyGasStation.json
+abi/LazyDelegateRegistry.json
+
+# Documentation that's not needed in package
+HEDERA_TEST_DESIGN_NOTES.md
+CLAUDE.md
+SUMMARY.md
+CHANGELOG.md
+UX_IMPLEMENTATION_GUIDE.md
+
+# Development tools
+.eslintrc
+.solhint.json
+.prettierrc
+.vscode/
+.github/
+
+# Build artifacts
+node_modules/
+coverage/
+*.log
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes

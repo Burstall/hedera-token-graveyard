@@ -1,8 +1,38 @@
 {
-  "name": "hedera-token-graveyard",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@lazysuperheroes/token-graveyard",
+  "version": "2.1.0",
+  "description": "Permanent NFT storage contract for Hedera with royalty bypass capabilities",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Burstall/hedera-token-graveyard.git"
+  },
+  "keywords": [
+    "hedera",
+    "nft",
+    "graveyard",
+    "smart-contract",
+    "solidity",
+    "hts",
+    "hedera-token-service"
+  ],
+  "author": "stowerling.eth / stowerling.hbar",
+  "license": "MIT",
+  "files": [
+    "contracts/TokenGraveyard.sol",
+    "contracts/TokenStaker.sol",
+    "contracts/HederaTokenServiceLite.sol",
+    "contracts/HederaResponseCodes.sol",
+    "contracts/interfaces/*.sol",
+    "abi/TokenGraveyard.json",
+    "abi/TokenStaker.json",
+    "README.md",
+    "INTEGRATION_GUIDE.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@openzeppelin/contracts": "^4.9.6"
+  },
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",

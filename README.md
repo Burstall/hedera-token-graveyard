@@ -12,6 +12,124 @@ Token Graveyard is a "trapdoor" smart contract that permanently stores NFTs. Onc
 - **LazyGasStation Integration**: Centralized $LAZY payment and burn mechanism
 - **Enhanced Events**: Clean, indexed events for easy tracking and UX integration
 
+## 📦 NPM Package Usage
+
+### Installation
+
+```bash
+npm install @lazysuperheroes/token-graveyard
+```
+
+### Importing in Solidity
+
+**Basic Integration (Recommended):**
+```solidity
+// Use the interface - no internal dependencies exposed
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/ITokenGraveyard.sol";
+
+contract MyNFTBurner {
+    ITokenGraveyard public graveyard;
+    
+    constructor(address graveyardAddress) {
+        graveyard = ITokenGraveyard(graveyardAddress);
+    }
+    
+    function burnMyNFTs(address tokenAddress, uint256[] memory serials) external {
+        // User must have set NFT allowances to this contract first
+        graveyard.stakeNFTsToTheGraveOnBehalf(tokenAddress, serials, msg.sender);
+    }
+}
+```
+
+**Advanced - Direct Implementation Inheritance:**
+```solidity
+// Only if you need to extend functionality
+import "@lazysuperheroes/token-graveyard/contracts/TokenGraveyard.sol";
+```
+
+### Available Imports
+
+```solidity
+// Core Interface (most common)
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/ITokenGraveyard.sol";
+
+// Other Interfaces
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/ILazyGasStation.sol";
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/ILazyDelegateRegistry.sol";
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/IRoles.sol";
+
+// Full Implementations (if extending)
+import "@lazysuperheroes/token-graveyard/contracts/TokenGraveyard.sol";
+import "@lazysuperheroes/token-graveyard/contracts/TokenStaker.sol";
+```
+
+### Integration Testing
+
+**Deploy in your test suite:**
+```javascript
+const TokenGraveyardABI = require('@lazysuperheroes/token-graveyard/abi/TokenGraveyard.json');
+const { ethers } = require('hardhat');
+
+describe("My Contract Integration", function() {
+    let graveyard;
+    
+    beforeEach(async function() {
+        // Deploy graveyard for testing
+        const TokenGraveyard = await ethers.getContractFactory(
+            TokenGraveyardABI.abi,
+            TokenGraveyardABI.bytecode
+        );
+        
+        graveyard = await TokenGraveyard.deploy(
+            lazyTokenAddress,
+            lazyGasStationAddress,
+            registryAddress, // or ethers.ZeroAddress
+            ethers.parseUnits("0", 8), // Free for testing
+            0  // No burn for testing
+        );
+        
+        await graveyard.waitForDeployment();
+    });
+    
+    it("should bury NFTs via graveyard", async function() {
+        // Your integration test
+        await graveyard.stakeNFTsToTheGrave(nftAddress, serials);
+    });
+});
+```
+
+### Version Compatibility
+
+**Included Hedera Precompiles:**
+- `HederaTokenServiceLite.sol` - Lightweight HTS interface
+- `HederaResponseCodes.sol` - Hedera system response codes
+
+**Note:** These are internal dependencies. If your project uses different variants, there's no conflict as long as you use explicit import paths:
+
+```solidity
+// Your code uses the graveyard's interface - no HTS exposure
+import "@lazysuperheroes/token-graveyard/contracts/interfaces/ITokenGraveyard.sol";
+
+// Your project can have its own HTS variant
+import "./contracts/hedera/MyHederaTokenService.sol";
+
+// No clash - different import paths
+```
+
+### Peer Dependencies
+
+```json
+{
+  "peerDependencies": {
+    "@openzeppelin/contracts": "^4.9.6"
+  }
+}
+```
+
+Make sure you have OpenZeppelin installed in your project.
+
+**📘 For complete integration examples, deployment patterns, and troubleshooting, see [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)**
+
 ## 🏗️ Architecture
 
 ### Core Components
